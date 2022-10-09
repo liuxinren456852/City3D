@@ -1,4 +1,8 @@
-## City3D: Large-scale Building Reconstruction from Airborne LiDAR Point Clouds
+### City3D: Large-scale Building Reconstruction from Airborne LiDAR Point Clouds
+
+<p align="center"> 
+     <img src="./images/scene.png" width="800"> 
+</p>
 
 City3D implements the hypothesis-and-selection based building reconstruction method described in the following [paper](https://www.mdpi.com/2072-4292/14/9/2254):
 ```
@@ -17,10 +21,13 @@ You can build City3D from the source code˙
 
 * Download the [source code](https://github.com/tudelft3d/City3D).
 * Dependencies
-    - [Qt](https://www.qt.io/) (v5.12 and later). This is required for only the [GUI demo](./City3D) of City3D. Without Qt, you should still be able to build the [commandline example](./Example) of City3D.
-    - [CGAL](http://www.cgal.org/index.html) (v5.0 and later).
-    - [OpenCv](https://opencv.org/releases/) (v4.0 and later, only the main modules are needed).
-    - [Gurobi](https://www.gurobi.com/) (optional but recommended).
+    - [Qt](https://www.qt.io/) (v5.12 and later). This is required by only the [GUI demo](https://github.com/tudelft3d/City3D/tree/main/code/City3D) of City3D. 
+      Without Qt, you should still be able to build the two commandline programs [Example_1](https://github.com/tudelft3d/City3D/tree/main/code/CLI_Example_1) and [Example_2](https://github.com/tudelft3d/City3D/tree/main/code/CLI_Example_2).
+    - [CGAL](http://www.cgal.org/index.html) (v5.4 and later).
+    - [OpenCV](https://opencv.org/releases/) (v4.0 and later, only the main modules are needed).
+    - [Gurobi](https://www.gurobi.com/). **Note for Linux users:** You may have to build the Gurobi library (`libgurobi_c++.a`) 
+      because the prebuilt one in the original package might NOT be compatible with your compiler. To do so, go to `src/build` 
+      and run `make`. Then replace the original `libgurobi_c++.a` (in the `lib` directory) with your generated file.
 
 * Build
     - There are many ways to build City3D. Choose one of the following (or whatever you are familiar with):
@@ -37,27 +44,38 @@ You can build City3D from the source code˙
 ---
 
 ### Run City3D
-For the [commandline example](./Example), you can simply build and run it (the paths to the input files are hard-coded in the [code](./Example/main.cpp)).
 
-The demo version adapts the UI of [PolyFit](https://github.com/LiangliangNan/PolyFit), which provides a simple user interface with a few buttons (with numbered icons). Just click the buttons one by one in the specified order.
+This repository includes three executable programs:
+
+- [Example_1](https://github.com/tudelft3d/City3D/tree/main/code/CLI_Example_1): a commandline program that can reconstruct multiple buildings in a large scene using 
+both point cloud and footprint as input.
+- [Example_2](https://github.com/tudelft3d/City3D/tree/main/code/CLI_Example_2): a commandline program showing the reconstruction of all the pre-segmented buildings in
+a large scene using only the point clouds as input. The individual buildings have already been segmented and each 
+building is stored as a separate point cloud file. Our method generates footprint for each building and then reconstructs it.
+- [City3D](https://github.com/tudelft3d/City3D/tree/main/code/City3D): a demo version of our method with GUI. This demo provides a simple user interface with 
+a few buttons (with numbered icons). Just click the buttons one by one in the specified order to run the workflow. 
+The UI was adapted from [PolyFit](https://github.com/LiangliangNan/PolyFit).
+
+<p align="center"> 
+     <img src="./images/GUI.png" width="600"> 
+</p>
 
 ---
 
-<p align="center"> 
-     <img src="./images/GUI.png" width="800"> 
-</p>
-
 ### Data
-Some test data can be downloaded from the [data](https://github.com/tudelft3d/City3D/tree/main/data) directory.
+Some test data can be found [here](https://github.com/tudelft3d/City3D/tree/main/data).
+Two ways to use our method:
+- Both point cloud and footprint are available (see the [data](https://github.com/tudelft3d/City3D/tree/main/data) directory), see [Example_1](./code/CLI_Example_1).
+- Only point cloud of building instances is available (see the [building_instances](https://github.com/tudelft3d/City3D/tree/main/data/building_instances) directory), the method can generate footprint for each building and then reconstruct it, See [Example_2](./code/CLI_Example_2).
 
 ---
 
 ### About the solvers
-This demo program can use either the open-source SCIP solver or the commercial solver Gurobi. The entire source code 
-of the SCIP solver is already included in this repository.
+This demo program can use either the open-source SCIP solver or the commercial solver Gurobi for the [core optimization](https://github.com/tudelft3d/City3D/blob/main/code/method/face_selection_optimization.cpp) step. The entire source code 
+of the SCIP solver is already included in this repository. Note: the [polygon regularization](https://github.com/tudelft3d/City3D/blob/main/code/method/regularize_polygon.cpp) step still requires Gurobi.
 
-To use Gurobi, one has to install Gurobi first and make sure the solver's headers and libraries 
-can be found by CMake. This can be done by specifying the paths of the solver in [FindGUROBI.cmake](https://github.com/tudelft3d/City3D/blob/main/cmake/FindGUROBI.cmake). 
+The Gurobi solver is faster than SCIP and is thus highly recommended. To use Gurobi, install it first and make sure 
+the headers and libraries of Gurobi can be found by CMake. This can be done by specifying the paths of Gurobi in [FindGUROBI.cmake](./code/cmake/FindGUROBI.cmake). 
 Note: you need to [obtain a license](https://www.gurobi.com/downloads/end-user-license-agreement-academic/) to use Gurobi, which is free for academic use.
 
 ---
@@ -80,10 +98,8 @@ If you use the code/program (or part) of City3D in a scientific work, please cit
 
 ## TODOs
 This is an academic prototype of LoD2 building reconstruction from LiDAR point clouds. Many intermediate steps can be improved.
-- [ ] Integrate with other line segments detector, like [LSD](http://www.ipol.im/pub/art/2012/gjmr-lsd/?utm%20source=doi)
-- [ ] Use more robust plane segmentation methods, like [PDPC](https://github.com/STORM-IRIT/Plane-Detection-Point-Cloud)
-- [ ] Compare our cluster based shape regularization scheme with the one in [CGAL](https://doc.cgal.org/latest/Shape_regularization/index.html)
-                           
+- [ ] Release the dataset. 
+- [ ] Support SCIP for [RegularizePolygon](https://github.com/tudelft3d/City3D/blob/main/method/regularize_polygon.cpp) (currently requires Gurobi).
 
 ---
 
